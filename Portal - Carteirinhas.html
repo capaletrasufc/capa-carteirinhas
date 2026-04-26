@@ -1,0 +1,106 @@
+<script>
+const SHEET_ID = "11XkMZz1UDw0wdHEG4W-eV6IJLqprKV0T3ecdbY_G4VQ";
+const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
+
+let dados = [];
+
+fetch(URL)
+  .then(res => res.text())
+  .then(rep => {
+    const json = JSON.parse(rep.substr(47).slice(0, -2));
+    dados = json.table.rows;
+  });
+
+function normalizar(texto) {
+  return (texto || "")
+    .toString()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+function getCorStatus(status) {
+  status = (status || "").toLowerCase();
+
+  if (status.includes("entregue")) return "#3b82f6";
+  if (status.includes("não está")) return "#ef4444";
+  if (status.includes("disponível")) return "#22c55e";
+
+  return "#9ca3af";
+}
+
+function limpar() {
+  document.getElementById("busca").value = "";
+  document.getElementById("resultado").innerHTML = "";
+}
+
+// 🔦 destaque do termo
+function destacar(texto, termo) {
+  if (!texto) return "";
+  const regex = new RegExp(`(${termo})`, "gi");
+  return texto.toString().replace(regex, "<mark>$1</mark>");
+}
+
+function buscar() {
+  const input = document.getElementById("busca");
+  const termoRaw = input.value.trim();
+  const termo = normalizar(termoRaw);
+  const div = document.getElementById("resultado");
+
+  if (!termo) {
+    div.innerHTML = "";
+    return;
+  }
+
+  const resultados = dados.filter(r => {
+    const linha = normalizar(r.c.map(c => c?.v || "").join(" "));
+    return linha.includes(termo);
+  });
+
+  if (resultados.length === 0) {
+    div.innerHTML = "Nada encontrado.";
+    return;
+  }
+
+  let html = `<div class="contador">${resultados.length} resultado(s)</div>`;
+
+  resultados.forEach(r => {
+    const cor = getCorStatus(r.c[4]?.v);
+
+    html += `
+      <div class="card">
+        <div class="linha"><span>Nome:</span> ${destacar(r.c[1]?.v, termoRaw)}</div>
+        <div class="linha"><span>Matrícula:</span> ${destacar(r.c[0]?.v, termoRaw)}</div>
+        <div class="linha"><span>Curso:</span> ${destacar(r.c[2]?.v, termoRaw)}</div>
+        <div class="linha"><span>Entidade:</span> ${destacar(r.c[3]?.v, termoRaw)}</div>
+        <div class="status" style="background:${cor}">
+          ${r.c[4]?.v}
+        </div>
+      </div>
+    `;
+  });
+
+  div.innerHTML = html;
+}
+
+// ⚡ debounce (evita travar enquanto digita)
+let timeout = null;
+
+window.addEventListener("DOMContentLoaded", () => {
+  const input = document.getElementById("busca");
+
+  input.addEventListener("input", () => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => {
+      buscar();
+    }, 300);
+  });
+
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      buscar();
+    }
+  });
+});
+</script>
