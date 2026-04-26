@@ -1,13 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Portal de Carteirinhas – CAPA</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #FAF3E5;
+      color: #1e293b;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      text-align: center;
+    }
+
+    .logo { width: 180px; margin-bottom: 10px; }
+
+    h2 { font-size: 16px; margin-bottom: 5px; }
+
+    .subtitulo {
+      font-size: 13px;
+      color: #6b7280;
+      margin-bottom: 15px;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+      font-size: 14px;
+      margin-top: 6px;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 8px;
+      border: none;
+      border-radius: 8px;
+      background: #1e293b;
+      color: white;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .btn-sec {
+      background: #e5e7eb;
+      color: #1e293b;
+    }
+
+    .card {
+      margin-top: 12px;
+      padding: 15px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      text-align: left;
+    }
+
+    .linha { font-size: 13px; margin-bottom: 6px; }
+    .linha span { font-weight: 600; }
+
+    .status {
+      margin-top: 10px;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 12px;
+      color: white;
+      display: inline-block;
+    }
+
+    .contador {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #374151;
+      text-align: left;
+    }
+
+    .erro {
+      margin-top: 12px;
+      padding: 12px;
+      background: #f3f4f6;
+      border-radius: 10px;
+      font-size: 13px;
+      color: #374151;
+      text-align: left;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+
+    .loading {
+      margin-top: 10px;
+      font-size: 11px;
+      color: #6b7280;
+      text-align: left;
+    }
+
+    mark {
+      background: #fde68a;
+      padding: 1px 3px;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+
+    <img src="https://i.imgur.com/ZvZkpoR.png" class="logo">
+
+    <h2>Consulte sua carteirinha</h2>
+
+    <div class="subtitulo">
+      Procure aqui sua carteirinha dos cursos de Letras e das Casas de Cultura da UFC
+    </div>
+
+    <input type="text" id="busca" placeholder="Pesquisar por matrícula, nome, curso ou entidade">
+
+    <button onclick="buscar()">Buscar</button>
+    <button class="btn-sec" onclick="limpar()">Limpar busca</button>
+
+    <div id="resultado"></div>
+
+  </div>
+
 <script>
 const SHEET_ID = "11XkMZz1UDw0wdHEG4W-eV6IJLqprKV0T3ecdbY_G4VQ";
 const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
 
 let dados = [];
+let timeout = null;
 
+// 🔄 carregar dados
 fetch(URL)
   .then(res => res.text())
   .then(rep => {
-    const json = JSON.parse(rep.substr(47).slice(0, -2));
+    const json = JSON.parse(rep.substring(47).slice(0, -2));
     dados = json.table.rows;
   });
 
@@ -34,7 +183,7 @@ function limpar() {
   document.getElementById("resultado").innerHTML = "";
 }
 
-// 🔦 destaque do termo
+// 🔦 destacar termo
 function destacar(texto, termo) {
   if (!texto) return "";
   const regex = new RegExp(`(${termo})`, "gi");
@@ -52,17 +201,29 @@ function buscar() {
     return;
   }
 
+  if (dados.length === 0) {
+    div.innerHTML = `<div class="loading">Carregando dados...</div>`;
+    return;
+  }
+
   const resultados = dados.filter(r => {
     const linha = normalizar(r.c.map(c => c?.v || "").join(" "));
     return linha.includes(termo);
   });
 
+  let aviso = `
+    <div class="erro">
+      <i class="fa-solid fa-circle-info"></i>
+      Opa! Parece que sua carteirinha não está conosco...!
+    </div>
+  `;
+
   if (resultados.length === 0) {
-    div.innerHTML = "Nada encontrado.";
+    div.innerHTML = aviso;
     return;
   }
 
-  let html = `<div class="contador">${resultados.length} resultado(s)</div>`;
+  let html = `<div class="contador">${resultados.length} resultado(s) encontrado(s)</div>`;
 
   resultados.forEach(r => {
     const cor = getCorStatus(r.c[4]?.v);
@@ -83,17 +244,13 @@ function buscar() {
   div.innerHTML = html;
 }
 
-// ⚡ debounce (evita travar enquanto digita)
-let timeout = null;
-
+// ⚡ eventos (Enter + digitação)
 window.addEventListener("DOMContentLoaded", () => {
   const input = document.getElementById("busca");
 
   input.addEventListener("input", () => {
     clearTimeout(timeout);
-    timeout = setTimeout(() => {
-      buscar();
-    }, 300);
+    timeout = setTimeout(buscar, 300);
   });
 
   input.addEventListener("keydown", (e) => {
@@ -104,3 +261,6 @@ window.addEventListener("DOMContentLoaded", () => {
   });
 });
 </script>
+
+</body>
+</html>
