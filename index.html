@@ -97,17 +97,22 @@
     }
 
     .erro {
-      margin-top: 12px;
+       margin-top: 12px;
       padding: 12px;
-      background: #fee2e2;
+      background: #f3f4f6;
       border-radius: 10px;
       font-size: 13px;
-      color: #991b1b;
+      color: #374151;
       text-align: left;
       display: flex;
       gap: 8px;
       align-items: flex-start;
     }
+    
+    .erro-vermelho {
+  background: #fee2e2;
+  color: #991b1b;
+}
 
     .contato-fixo {
       margin-top: 15px;
@@ -159,7 +164,6 @@
 
     <div id="resultado"></div>
 
-    <!-- AVISO FIXO -->
     <div class="aviso-fixo">
       <div class="erro">
         <i class="fa-solid fa-circle-info"></i>
@@ -168,7 +172,6 @@
       </div>
     </div>
 
-    <!-- CONTATO -->
     <div class="contato-fixo">
       <a href="mailto:capatativa@gmail.com">
         <i class="fa-solid fa-envelope"></i>
@@ -230,7 +233,7 @@ function buscar() {
   const div = document.getElementById("resultado");
 
   if (termo.length < 3) {
-    div.innerHTML = ""; // silêncio elegante
+    div.innerHTML = "";
     return;
   }
 
@@ -241,7 +244,7 @@ function buscar() {
 
   if (resultados.length === 0) {
     div.innerHTML = `
-      <div class="erro">
+      <div class="erro-vermelho">
         <i class="fa-solid fa-circle-info"></i>
         Opa! Parece que sua carteirinha não está conosco...
       </div>
