@@ -109,13 +109,6 @@
       align-items: flex-start;
     }
 
-    .loading {
-      margin-top: 10px;
-      font-size: 11px;
-      color: #6b7280;
-      text-align: left;
-    }
-
     .contato-fixo {
       margin-top: 15px;
       display: flex;
@@ -125,17 +118,25 @@
 
     .contato-fixo a {
       background: white;
-      padding: 10px 12px;
-      border-radius: 10px;
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
       box-shadow: 0 2px 10px rgba(0,0,0,0.15);
       font-size: 18px;
       color: #1e293b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     mark {
       background: #fde68a;
       padding: 1px 3px;
       border-radius: 3px;
+    }
+
+    .aviso-fixo {
+      margin-top: 15px;
     }
   </style>
 </head>
@@ -151,13 +152,23 @@
       Procure aqui sua carteirinha dos cursos de Letras e das Casas de Cultura da UFC
     </div>
 
-    <input type="text" id="busca" placeholder="Digite pelo menos 3 letras">
+    <input type="text" id="busca" placeholder="Pesquise por nome, matrícula, curso ou entidade">
 
     <button onclick="buscar()">Buscar</button>
     <button class="btn-sec" onclick="limpar()">Limpar busca</button>
 
     <div id="resultado"></div>
 
+    <!-- AVISO FIXO -->
+    <div class="aviso-fixo">
+      <div class="erro">
+        <i class="fa-solid fa-circle-info"></i>
+        Este sistema reafirma o compromisso com o respeito ao nome social e à identidade de cada estudante.  
+        Em caso de inconsistências, procure o CAPA para orientação.
+      </div>
+    </div>
+
+    <!-- CONTATO -->
     <div class="contato-fixo">
       <a href="mailto:capatativa@gmail.com">
         <i class="fa-solid fa-envelope"></i>
@@ -219,7 +230,7 @@ function buscar() {
   const div = document.getElementById("resultado");
 
   if (termo.length < 3) {
-    div.innerHTML = `<div class="erro">Digite pelo menos 3 caracteres para buscar.</div>`;
+    div.innerHTML = ""; // silêncio elegante
     return;
   }
 
@@ -232,7 +243,7 @@ function buscar() {
     div.innerHTML = `
       <div class="erro">
         <i class="fa-solid fa-circle-info"></i>
-        Opa! Parece que sua carteirinha não está conosco...!
+        Opa! Parece que sua carteirinha não está conosco...
       </div>
     `;
     return;
@@ -255,14 +266,6 @@ function buscar() {
       </div>
     `;
   });
-
-  html += `
-    <div class="erro">
-      <i class="fa-solid fa-circle-info"></i>
-      Este sistema reafirma o compromisso com o respeito ao nome social e à identidade de cada estudante.  
-      Em caso de inconsistências, procure o CAPA para orientação.
-    </div>
-  `;
 
   div.innerHTML = html;
 }
