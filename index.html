@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <title>Portal de Carteirinhas – CAPA</title>
-
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
@@ -117,6 +116,22 @@
       text-align: left;
     }
 
+    .contato-fixo {
+      margin-top: 15px;
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+    }
+
+    .contato-fixo a {
+      background: white;
+      padding: 10px 12px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+      font-size: 18px;
+      color: #1e293b;
+    }
+
     mark {
       background: #fde68a;
       padding: 1px 3px;
@@ -136,12 +151,23 @@
       Procure aqui sua carteirinha dos cursos de Letras e das Casas de Cultura da UFC
     </div>
 
-    <input type="text" id="busca" placeholder="Pesquisar por matrícula, nome, curso ou entidade">
+    <input type="text" id="busca" placeholder="Digite pelo menos 3 letras">
 
     <button onclick="buscar()">Buscar</button>
     <button class="btn-sec" onclick="limpar()">Limpar busca</button>
 
     <div id="resultado"></div>
+
+    <div class="contato-fixo">
+      <a href="mailto:capatativa@gmail.com">
+        <i class="fa-solid fa-envelope"></i>
+      </a>
+
+      <a href="https://instagram.com/capaletrasufc" target="_blank"
+         onclick="window.open('instagram://user?username=capaletrasufc'); return true;">
+        <i class="fa-brands fa-instagram"></i>
+      </a>
+    </div>
 
   </div>
 
@@ -152,7 +178,6 @@ const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:
 let dados = [];
 let timeout = null;
 
-// 🔄 carregar dados
 fetch(URL)
   .then(res => res.text())
   .then(rep => {
@@ -162,7 +187,6 @@ fetch(URL)
 
 function normalizar(texto) {
   return (texto || "")
-    .toString()
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "");
@@ -183,7 +207,6 @@ function limpar() {
   document.getElementById("resultado").innerHTML = "";
 }
 
-// 🔦 destacar termo
 function destacar(texto, termo) {
   if (!texto) return "";
   const regex = new RegExp(`(${termo})`, "gi");
@@ -191,18 +214,12 @@ function destacar(texto, termo) {
 }
 
 function buscar() {
-  const input = document.getElementById("busca");
-  const termoRaw = input.value.trim();
+  const termoRaw = document.getElementById("busca").value.trim();
   const termo = normalizar(termoRaw);
   const div = document.getElementById("resultado");
 
-  if (!termo) {
-    div.innerHTML = "";
-    return;
-  }
-
-  if (dados.length === 0) {
-    div.innerHTML = `<div class="loading">Carregando dados...</div>`;
+  if (termo.length < 3) {
+    div.innerHTML = `<div class="erro">Digite pelo menos 3 caracteres para buscar.</div>`;
     return;
   }
 
@@ -211,15 +228,13 @@ function buscar() {
     return linha.includes(termo);
   });
 
-  let aviso = `
-    <div class="erro">
-      <i class="fa-solid fa-circle-info"></i>
-      Opa! Parece que sua carteirinha não está conosco...!
-    </div>
-  `;
-
   if (resultados.length === 0) {
-    div.innerHTML = aviso;
+    div.innerHTML = `
+      <div class="erro">
+        <i class="fa-solid fa-circle-info"></i>
+        Opa! Parece que sua carteirinha não está conosco...!
+      </div>
+    `;
     return;
   }
 
@@ -241,10 +256,17 @@ function buscar() {
     `;
   });
 
+  html += `
+    <div class="erro">
+      <i class="fa-solid fa-circle-info"></i>
+      Este sistema reafirma o compromisso com o respeito ao nome social e à identidade de cada estudante.  
+      Em caso de inconsistências, procure o CAPA para orientação.
+    </div>
+  `;
+
   div.innerHTML = html;
 }
 
-// ⚡ eventos (Enter + digitação)
 window.addEventListener("DOMContentLoaded", () => {
   const input = document.getElementById("busca");
 
